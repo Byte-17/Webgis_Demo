@@ -7,7 +7,7 @@ function initGuangdongMap() {
     myChart = echarts.init(echartsContainer);
   }
 
-  fetch('https://geo.datav.aliyun.com/areas_v3/bound/440000_full.json')
+  fetch('js/guangdong_boundary.json')
     .then(response => response.json())
     .then(geoJson => {
       echarts.registerMap('guangdong', geoJson);

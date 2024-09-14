@@ -3,7 +3,7 @@
 (function () {
     var myChart1 = echarts.init(document.querySelector(".bar .chart"));
     myChart1.showLoading();
-    $.get('https://geo.datav.aliyun.com/areas_v3/bound/441800_full.json', function (geoJson) {
+    $.getJSON('js/qingyuan_boundary.json', function (geoJson) {
     myChart1.hideLoading();
     echarts.registerMap('清远市', geoJson);
     myChart1.setOption({
@@ -96,7 +96,7 @@
     var option;
 
     myChart.showLoading();
-    $.get('https://geo.datav.aliyun.com/areas_v3/bound/440000_full.json', function (geoJson) {
+    $.get('js/guangdong_boundary.json', function (geoJson) {
     myChart.hideLoading();
     echarts.registerMap('广东省', geoJson);
     myChart.setOption(
