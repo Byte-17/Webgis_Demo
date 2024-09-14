@@ -68,10 +68,3 @@
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 开启一个 Pull Request
 
-## 许可证
-
-[选择适当的许可证，例如 MIT License]
-
-## 联系方式
-
-[您的联系信息或项目维护者的联系方式]

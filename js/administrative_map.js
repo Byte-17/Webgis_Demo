@@ -23,7 +23,7 @@ function initAdministrativeMap() {
 function addAdministrativeBoundaries() {
   administrativeMap.addSource('guangdong-boundary', {
     type: 'geojson',
-    data: 'https://geo.datav.aliyun.com/areas_v3/bound/440000_full.json'
+    data: 'js/guangdong_boundary.json'
   });
 
   administrativeMap.addLayer({
