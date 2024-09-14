@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Satellite Image with Layer Switching</title>
+  <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+  <style>
+    #mapContainer {
+      width: 800px;
+      height: 600px;
+    }
+
+    #layerControl {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="mapContainer"></div>
+  <div id="layerControl">
+    <div>
+      <input type="checkbox" id="imageLayerCheckbox" checked>
+      <label for="imageLayerCheckbox">Satellite Image</label>
+    </div>
+    <div>
+      <input type="checkbox" id="ndviLayerCheckbox">
+      <label for="ndviLayerCheckbox">NDVI</label>
+    </div>
+    <div>
+      <input type="checkbox" id="demLayerCheckbox">
+      <label for="demLayerCheckbox">DEM</label>
+    </div>
+  </div>
+
+  <script>
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic3VuaGhoIiwiYSI6ImNrOHYydDcxaDA2Y2QzZ3ByNHhxaHRwNnUifQ.EY5JFYPs7LPFTtv0kmBKvw';
+
+    var map = new mapboxgl.Map({
+      container: 'mapContainer',
+      style: 'mapbox://styles/mapbox/satellite-v9',
+      center: [113.280637, 23.125178],
+      zoom: 7
+    });
+
+    var imageLayerId = 'image-layer';
+    var ndviLayerId = 'ndvi-layer';
+    var demLayerId = 'dem-layer';
+
+    map.on('load', function() {
+      // 添加卫星图层
+      map.addLayer({
+        id: imageLayerId,
+        type: 'raster',
+        source: {
+          type: 'raster',
+          tiles: ['https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=' + mapboxgl.accessToken],
+          tileSize: 256
+        },
+        paint: {}
+      });
+
+      // 添加NDVI图层（这里使用一个示例图层，您需要替换为实际的NDVI数据源）
+      map.addLayer({
+        id: ndviLayerId,
+        type: 'raster',
+        source: {
+          type: 'raster',
+          tiles: ['https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=' + mapboxgl.accessToken],
+          tileSize: 256
+        },
+        paint: {
+          'raster-opacity': 0.5
+        },
+        layout: {
+          visibility: 'none'
+        }
+      });
+
+      // 添加DEM图层
+      map.addSource('dem', {
+        type: 'raster-dem',
+        url: 'mapbox://mapbox.terrain-rgb'
+      });
+
+      map.addLayer({
+        id: demLayerId,
+        type: 'hillshade',
+        source: 'dem',
+        layout: {
+          visibility: 'none'
+        },
+        paint: {
+          'hillshade-exaggeration': 1,
+          'hillshade-illumination-direction': 315,
+          'hillshade-shadow-color': '#000000',
+          'hillshade-highlight-color': '#ffffff',
+          'hillshade-accent-color': [
+            'interpolate',
+            ['linear'],
+            ['abs', ['-', ['get', 'elevation'], 1000]],
+            0, '#008000',
+            500, '#FFFF00',
+            1000, '#FF0000',
+            2000, '#FFFFFF'
+          ]
+        }
+      });
+
+      // 在地图加载完成后绑定事件监听器
+      document.getElementById('imageLayerCheckbox').addEventListener('change', updateLayers);
+      document.getElementById('ndviLayerCheckbox').addEventListener('change', updateLayers);
+      document.getElementById('demLayerCheckbox').addEventListener('change', updateLayers);
+
+      // 初始化图层可见性
+      updateLayers();
+    });
+
+    function updateLayers() {
+      var imageLayerCheckbox = document.getElementById('imageLayerCheckbox');
+      var ndviLayerCheckbox = document.getElementById('ndviLayerCheckbox');
+      var demLayerCheckbox = document.getElementById('demLayerCheckbox');
+
+      if (map.getLayer(imageLayerId)) {
+        map.setLayoutProperty(imageLayerId, 'visibility', imageLayerCheckbox.checked ? 'visible' : 'none');
+      }
+      if (map.getLayer(ndviLayerId)) {
+        map.setLayoutProperty(ndviLayerId, 'visibility', ndviLayerCheckbox.checked ? 'visible' : 'none');
+      }
+      if (map.getLayer(demLayerId)) {
+        map.setLayoutProperty(demLayerId, 'visibility', demLayerCheckbox.checked ? 'visible' : 'none');
+      }
+    }
+  </script>
+</body>
+</html>
