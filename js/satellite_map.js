@@ -30,7 +30,7 @@ function addChinaBoundary() {
   // 保留您原有的添加中国边界的代码
   satelliteMap.addSource('china-boundary', {
     type: 'geojson',
-    data: 'https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json'
+    data: 'js/china_boundary.json'
   });
 
   satelliteMap.addLayer({
