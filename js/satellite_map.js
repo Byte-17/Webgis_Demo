@@ -52,7 +52,7 @@ function addGuangdongBoundary() {
   // 保留您原有的添加广东省边界的代码
   satelliteMap.addSource('guangdong-boundary', {
     type: 'geojson',
-    data: 'https://geo.datav.aliyun.com/areas_v3/bound/440000_full.json'
+    data: 'js/china_boundary.json'
   });
 
   satelliteMap.addLayer({
