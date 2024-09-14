@@ -31,6 +31,7 @@ function addChinaBoundary() {
   satelliteMap.addSource('china-boundary', {
     type: 'geojson',
     data: 'js/china_boundary.json'
+    
   });
 
   satelliteMap.addLayer({
