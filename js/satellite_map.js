@@ -31,7 +31,7 @@ function addChinaBoundary() {
   satelliteMap.addSource('china-boundary', {
     type: 'geojson',
     data: 'js/china_boundary.json'
-    
+
   });
 
   satelliteMap.addLayer({
@@ -52,7 +52,7 @@ function addGuangdongBoundary() {
   // 保留您原有的添加广东省边界的代码
   satelliteMap.addSource('guangdong-boundary', {
     type: 'geojson',
-    data: 'js/china_boundary.json'
+    data: 'js/guangdong_boundary.json'
   });
 
   satelliteMap.addLayer({
