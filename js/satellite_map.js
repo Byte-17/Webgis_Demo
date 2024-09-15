@@ -1,7 +1,7 @@
 mapboxgl.accessToken = 'pk.eyJ1Ijoic3VuaGhoIiwiYSI6ImNrOHYydDcxaDA2Y2QzZ3ByNHhxaHRwNnUifQ.EY5JFYPs7LPFTtv0kmBKvw';
 
 let satelliteMap;
-let ndviLayerAdded = false;
+let layers = {};
 
 function initSatelliteMap() {
   if (satelliteMap) return Promise.resolve();
@@ -10,8 +10,8 @@ function initSatelliteMap() {
   satelliteMap = new mapboxgl.Map({
     container: 'satelliteMapContainer',
     style: 'mapbox://styles/mapbox/satellite-v9',
-    center: [113.280637, 23.125178], // 广东省中心坐标
-    zoom: 7
+    center: [80, 30],
+    zoom: 3
   });
 
   return new Promise(resolve => {
@@ -19,19 +19,19 @@ function initSatelliteMap() {
       console.log('卫星图加载完成');
       addChinaBoundary();
       addGuangdongBoundary();
-      addNDVILayer();
-      initSatelliteOptions();
-      resolve();
+      loadStudyAreas().then(() => {
+        console.log('研究区加载完成', layers);
+        initSatelliteOptions();
+        resolve();
+      });
     });
   });
 }
 
 function addChinaBoundary() {
-  // 保留您原有的添加中国边界的代码
   satelliteMap.addSource('china-boundary', {
     type: 'geojson',
     data: 'js/china_boundary.json'
-
   });
 
   satelliteMap.addLayer({
@@ -49,7 +49,6 @@ function addChinaBoundary() {
 }
 
 function addGuangdongBoundary() {
-  // 保留您原有的添加广东省边界的代码
   satelliteMap.addSource('guangdong-boundary', {
     type: 'geojson',
     data: 'js/guangdong_boundary.json'
@@ -69,51 +68,188 @@ function addGuangdongBoundary() {
   });
 }
 
-function addNDVILayer() {
-  console.log('开始添加 NDVI 图层');
-  if (ndviLayerAdded) {
-    console.log('NDVI 图层已经存在，不需要重复添加');
-    return;
-  }
+function loadStudyAreas() {
+  console.log('开始加载研究区');
+  const studyAreas = {
+    'xinjiang': 'js/akesu_boundary.json',
+    'guangdong': 'js/zhanjiang_boundary.json',
+    'centralAsiaRiver': 'js/zhongya_river_boundary.json',
+    'world': 'js/world.zh.json'
+  };
 
-  if (!satelliteMap.isStyleLoaded()) {
-    console.log('地图样式尚未加载完成，等待加载...');
-    satelliteMap.once('style.load', addNDVILayer);
-    return;
-  }
-
-  console.log('添加 NDVI 源');
-  satelliteMap.addSource('ndvi-source', {
-    type: 'raster',
-    tiles: ['https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=' + mapboxgl.accessToken],
-    tileSize: 256
+  const promises = Object.entries(studyAreas).map(([id, url]) => {
+    console.log(`开始加载 ${id} 数据，URL: ${url}`);
+    return fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log(`${id} 数据加载成功`, data);
+        if (id === 'world') {
+          layers.centralAsia = {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              geometry: data.features.find(f => f.properties.name === "哈萨克斯坦").geometry
+            }
+          };
+          layers.turkey = {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              geometry: data.features.find(f => f.properties.name === "土耳其").geometry
+            }
+          };
+          layers.vietnam = {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              geometry: data.features.find(f => f.properties.name === "越南").geometry
+            }
+          };
+        } else {
+          layers[id] = {
+            type: 'geojson',
+            data: data
+          };
+        }
+        console.log(`${id} 数据已添加到 layers 对象`, layers[id]);
+      })
+      .catch(error => {
+        console.error(`加载 ${id} 数据失败`, error);
+      });
   });
 
-  console.log('添加 NDVI 图层');
-  satelliteMap.addLayer({
-    id: 'ndvi-layer',
-    type: 'raster',
-    source: 'ndvi-source',
-    paint: {
-      'raster-opacity': 0.7,
-      'raster-color': [
-        'interpolate',
-        ['linear'],
-        ['band', 1],
-        0, 'rgba(255,0,0,1)',
-        0.1, 'rgba(255,255,0,1)',
-        0.2, 'rgba(0,255,0,1)',
-        0.3, 'rgba(0,128,0,1)',
-        0.4, 'rgba(0,64,0,1)'
-      ]
-    },
-    layout: {
-      visibility: 'none'
-    }
-  }, 'china-boundary'); // 将 NDVI 图层插入到 china-boundary 图层之前
+  return Promise.all(promises);
+}
 
-  ndviLayerAdded = true;
-  console.log('NDVI 图层添加完成');
+function initSatelliteOptions() {
+  console.log('初始化卫星图选项');
+  const showBoundariesCheckbox = document.getElementById('showBoundaries');
+  const showStudyAreaCheckbox = document.getElementById('showStudyArea');
+  const studyAreaOptions = document.getElementById('studyAreaOptions');
+
+  if (showBoundariesCheckbox) {
+    showBoundariesCheckbox.addEventListener('change', function(e) {
+      const visibility = e.target.checked ? 'visible' : 'none';
+      satelliteMap.setLayoutProperty('china-boundary', 'visibility', visibility);
+      satelliteMap.setLayoutProperty('guangdong-boundary', 'visibility', visibility);
+      console.log(`行政边界可见性设置为: ${visibility}`);
+    });
+  }
+
+  if (showStudyAreaCheckbox && studyAreaOptions) {
+    showStudyAreaCheckbox.addEventListener('change', function(e) {
+      studyAreaOptions.style.display = e.target.checked ? 'block' : 'none';
+      console.log(`研究区选项显示状态: ${e.target.checked ? '显示' : '隐藏'}`);
+    });
+  }
+
+  document.querySelectorAll('#studyAreaOptions input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', function(e) {
+      const id = e.target.value;
+      console.log(`切换 ${id} 研究区的显示状态`);
+      if (this.checked) {
+        if (layers[id]) {
+          console.log(`尝试添加 ${id} 图层`, layers[id]);
+          if (!satelliteMap.getSource(id)) {
+            console.log(`添加 ${id} 数据源`);
+            satelliteMap.addSource(id, layers[id]);
+          }
+          if (!satelliteMap.getLayer(id)) {
+            console.log(`添加 ${id} 图层`);
+            satelliteMap.addLayer({
+              'id': id,
+              'type': 'fill',
+              'source': id,
+              'paint': {
+                'fill-color': id === 'centralAsiaRiver' ? 'blue' : 'red',
+                'fill-opacity': 0.4
+              }
+            });
+          } else {
+            console.log(`设置 ${id} 图层可见性为可见`);
+            satelliteMap.setLayoutProperty(id, 'visibility', 'visible');
+          }
+          console.log(`缩放到 ${id} 区域`);
+          fitMapToLayer(id);
+        } else {
+          console.error(`${id} 图层数据不存在`, layers);
+        }
+        if (id === 'centralAsia' && layers.centralAsiaRiver) {
+          console.log('添加中亚两河流域边界');
+          if (!satelliteMap.getSource('centralAsiaRiver')) {
+            satelliteMap.addSource('centralAsiaRiver', layers.centralAsiaRiver);
+          }
+          if (!satelliteMap.getLayer('centralAsiaRiver')) {
+            satelliteMap.addLayer({
+              'id': 'centralAsiaRiver',
+              'type': 'fill',
+              'source': 'centralAsiaRiver',
+              'paint': {
+                'fill-color': 'blue',
+                'fill-opacity': 0.2
+              }
+            });
+          } else {
+            satelliteMap.setLayoutProperty('centralAsiaRiver', 'visibility', 'visible');
+          }
+        }
+      } else {
+        console.log(`隐藏 ${id} 图层`);
+        if (satelliteMap.getLayer(id)) {
+          satelliteMap.setLayoutProperty(id, 'visibility', 'none');
+        }
+        if (id === 'centralAsia' && satelliteMap.getLayer('centralAsiaRiver')) {
+          console.log('隐藏中亚两河流域边界');
+          satelliteMap.setLayoutProperty('centralAsiaRiver', 'visibility', 'none');
+        }
+      }
+    });
+  });
+}
+
+function fitMapToLayer(id) {
+  if (layers[id] && layers[id].data) {
+    const bounds = new mapboxgl.LngLatBounds();
+    const geometry = layers[id].data.geometry || layers[id].data.features[0].geometry;
+    const coordinates = geometry.coordinates;
+    
+    // 处理多种几何类型
+    if (geometry.type === 'Polygon') {
+      coordinates[0].forEach(coord => bounds.extend(coord));
+    } else if (geometry.type === 'MultiPolygon') {
+      coordinates.forEach(polygon => {
+        polygon[0].forEach(coord => bounds.extend(coord));
+      });
+    }
+
+    // 为不同区域设置不同的缩放级别和填充
+    let padding = { top: 20, bottom: 20, left: 20, right: 20 };
+    let maxZoom = 10;
+
+    if (id === 'turkey') {
+      maxZoom = 6;  // 降低土耳其的最大缩放级别
+      padding = { top: 50, bottom: 50, left: 50, right: 50 };  // 增加填充
+    } else if (id === 'xinjiang') {
+      maxZoom = 5;  // 为新疆设置更低的最大缩放级别
+      padding = { top: 150, bottom: 150, left: 150, right: 150 };  // 增加填充
+    } else if (id === 'guangdong') {
+      maxZoom = 7;  // 为湛江保持原来的缩放级别
+      padding = { top: 100, bottom: 100, left: 100, right: 100 };  // 增加填充
+    }
+
+    satelliteMap.fitBounds(bounds, {
+      padding: padding,
+      maxZoom: maxZoom,
+      duration: 1000  // 添加动画效果
+    });
+  } else {
+    console.error(`无法为 ${id} 找到有效的边界数据`);
+  }
 }
 
 function showSatelliteMap() {
@@ -121,8 +257,8 @@ function showSatelliteMap() {
   const satelliteMapContainer = document.getElementById('satelliteMapContainer');
   const satelliteOptions = document.getElementById('satelliteOptions');
 
-  satelliteMapContainer.style.display = 'block';
-  satelliteOptions.style.display = 'block';
+  if (satelliteMapContainer) satelliteMapContainer.style.display = 'block';
+  if (satelliteOptions) satelliteOptions.style.display = 'block';
 
   if (!satelliteMap) {
     initSatelliteMap().then(() => {
@@ -138,33 +274,9 @@ function hideSatelliteMap() {
   const satelliteMapContainer = document.getElementById('satelliteMapContainer');
   const satelliteOptions = document.getElementById('satelliteOptions');
 
-  satelliteMapContainer.style.display = 'none';
-  satelliteOptions.style.display = 'none';
+  if (satelliteMapContainer) satelliteMapContainer.style.display = 'none';
+  if (satelliteOptions) satelliteOptions.style.display = 'none';
 }
 
-function initSatelliteOptions() {
-  console.log('初始化卫星图选项');
-  document.getElementById('showBoundaries').addEventListener('change', function(e) {
-    const visibility = e.target.checked ? 'visible' : 'none';
-    satelliteMap.setLayoutProperty('china-boundary', 'visibility', visibility);
-    satelliteMap.setLayoutProperty('guangdong-boundary', 'visibility', visibility);
-  });
-
-  document.getElementById('showNDVI').addEventListener('change', function(e) {
-    if (!ndviLayerAdded) {
-      console.log('NDVI 图层尚未添加，正在添加...');
-      addNDVILayer();
-    }
-    const visibility = e.target.checked ? 'visible' : 'none';
-    if (satelliteMap.getLayer('ndvi-layer')) {
-      satelliteMap.setLayoutProperty('ndvi-layer', 'visibility', visibility);
-      console.log('NDVI 图层可见性已更改为:', visibility);
-    } else {
-      console.error('NDVI 图层不存在');
-    }
-  });
-}
-
-// 将函数挂载到 window 对象，以便在其他地方调用
 window.showSatelliteMap = showSatelliteMap;
 window.hideSatelliteMap = hideSatelliteMap;

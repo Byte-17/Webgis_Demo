@@ -129,10 +129,28 @@
                 <input type="checkbox" id="showBoundaries" checked>
                 显示行政边界
               </label>
-              <!-- <label>
-                <input type="checkbox" id="showNDVI">
-                显示NDVI图层
-              </label> -->
+              <label>
+                <input type="checkbox" id="showStudyArea">
+                显示研究区
+              </label>
+              <div id="studyAreaOptions" style="display: none; margin-left: 20px;">
+                <label>
+                  <input type="checkbox" name="studyArea" value="xinjiang"> 新疆 阿克苏地区
+                </label>
+                <label>
+                  <input type="checkbox" name="studyArea" value="centralAsia"> 中亚两河流域
+                </label>
+                <label>
+                  <input type="checkbox" name="studyArea" value="turkey"> 土耳其 哈兰平原
+                </label>
+                <label>
+                  <input type="checkbox" name="studyArea" value="guangdong"> 广东湛江
+                </label>
+                <label>
+                  <input type="checkbox" name="studyArea" value="vietnam"> 越南 平顺省
+                </label>
+              </div>
+              
               
             </div>
             <div id="administrativeOptions" style="display: none;">
@@ -185,6 +203,7 @@
     <script src="js/administrative_map.js"></script>
     <script src="js/satellite_map.js"></script>
     <script src="js/guangdong-map.js"></script>
+    <script src="js/.js"></script>
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {
