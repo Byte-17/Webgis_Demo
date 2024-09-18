@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修改用户信息</title>
+    <style>
+        /* 可以复用 login.html 的样式 */
+    </style>
+</head>
+<body>
+    <div class="bg">
+        <div class="login-container">
+            <h1>修改用户信息</h1>
+            <form id="updateForm">
+                <input type="text" id="oldUsername" placeholder="当前用户名" required>
+                <input type="text" id="newUsername" placeholder="新用户名" required>
+                <input type="password" id="newPassword" placeholder="新密码" required>
+                <button type="submit">更新</button>
+            </form>
+        </div>
+    </div>
+    <script src="js/users.js"></script>
+    <script>
+        document.getElementById('updateForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const oldUsername = document.getElementById('oldUsername').value;
+            const newUsername = document.getElementById('newUsername').value;
+            const newPassword = document.getElementById('newPassword').value;
+
+            try {
+                await updateUser(oldUsername, newUsername, newPassword);
+                alert('用户信息更新成功');
+                window.location.href = 'login.html'; // 更新成功后跳转到登录页面
+            } catch (error) {
+                alert('更新失败: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,70 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>数据可视化</title>
     <link rel="stylesheet" href="css/index.css" />
-    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-language/v0.10.1/mapbox-gl-language.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-language/v0.10.1/mapbox-gl-language.css" rel="stylesheet" />
-    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
-    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
-    <style>
-      .layer-control {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: white;
-        padding: 10px;
-        border-radius: 5px;
-        z-index: 1000;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      }
-
-      .layer-control select,
-      .layer-control label {
-        display: block;
-        margin-bottom: 5px;
-      }
-    </style>
+    <!-- 将内联样式移到外部CSS文件 -->
+    <script>
+      // 使用环境变量或从服务器获取token
+      window.MAPBOX_TOKEN = '{{ MAPBOX_TOKEN }}';
+    </script>
   </head>
   <body>
+    <!-- 添加背景图容器 -->
+    <div class="background-container">
+      <div class="rotating-images">
+        <img src="images/lbx.png" alt="LBX" class="rotating-image" id="lbx">
+        <img src="images/jt.png" alt="JT" class="rotating-image" id="jt">
+      </div>
+    </div>
+
     <!-- 头部 -->
     <header>
       <h1>地理标志信息可视化</h1>
-      <div class="show-time"></div>
-      <script>
-        var t = null;
-        t = setTimeout(time, 1000); //开始运行
-        function time() {
-          clearTimeout(t); //清除定时器
-          dt = new Date();
-          var y = dt.getFullYear();
-          var mt = dt.getMonth() + 1;
-          var day = dt.getDate();
-          var h = dt.getHours(); //获取时
-          var m = dt.getMinutes(); //获取分
-          var s = dt.getSeconds(); //获取秒
-          document.querySelector(".show-time").innerHTML =
-            "当前时间：" +
-            y +
-            "年" +
-            mt +
-            "月" +
-            day +
-            "日-" +
-            h +
-            "时" +
-            m +
-            "分" +
-            s +
-            "秒";
-          t = setTimeout(time, 1000); //设定定时器，循环
-        }
-      </script>
+      <div class="show-time" aria-live="polite"></div>
+      <script src="js/time.js"></script>
     </header>
 
     <!-- 页面主体 -->
@@ -191,19 +153,20 @@
       </div>
     </section>
 
+    <!-- 将所有脚本引用移到这里 -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-language/v0.10.1/mapbox-gl-language.js"></script>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <script src="js/flexible.js"></script>
     <script src="js/jquery.js"></script>
-    <!-- 引入china.js 完成地图块 -->
-    <!-- <script src="js/china.js"></script> -->
     <script src="js/index1.js"></script>
-    <!-- <script src="js/guangdong-map.js"></script> -->
-
-    
     <script src="js/administrative_map.js"></script>
     <script src="js/satellite_map.js"></script>
     <script src="js/guangdong-map.js"></script>
-    <script src="js/.js"></script>
+    <script src="js/main.min.js"></script>
+    <script src="js/initData.js"></script>
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {
@@ -233,6 +196,18 @@
       });
     </script>
 
-    
+    <script>
+      // 将token存储在localStorage中
+      localStorage.setItem('mapbox_token', btoa('your_mapbox_token_here'));
+    </script>
+
+    <script>
+      // 将地图数据存储在localStorage中
+      const mapData = {
+        // 您的地图数据
+      };
+      localStorage.setItem('mapData', btoa(JSON.stringify(mapData)));
+    </script>
+
   </body>
 </html>
