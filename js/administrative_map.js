@@ -8,7 +8,7 @@ function initAdministrativeMap() {
 
   administrativeMap = new mapboxgl.Map({
     container: 'administrativeMapContainer',
-    style: 'mapbox://styles/mapbox/light-v10',
+    style: 'mapbox://styles/mapbox/streets-v11',
     center: [113.280637, 23.125178], // 广东省中心坐标
     zoom: 7
   });

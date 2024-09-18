@@ -5,7 +5,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 
     if (await verifyUser(username, password)) {
         localStorage.setItem('isLoggedIn', 'true');
-        window.location.href = 'index.html'; // 登录成功，跳转到主页
+        window.location.href = 'main_page.html'; // 确保登录成功后跳转到main_page.html
     } else {
         alert('用户名或密码错误');
     }
